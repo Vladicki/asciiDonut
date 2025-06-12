@@ -1,0 +1,4 @@
+module goDonut
+
+go 1.24.3
+
