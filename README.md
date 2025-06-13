@@ -2,8 +2,7 @@
 
 This is a fun and mesmerizing ASCII art animation of a **3D spinning donut**, implemented in Go. It renders a rotating torus (donut shape) entirely with characters in your terminal, using basic 3D math, perspective projection, and luminance-based shading.
 
-![Spinning Donut](https://external-preview.redd.it/U37pgDkzLO-0mIfsWL9f6cATW3YKOUpBP0gXJc3wzOY.gif?format=mp4&s=755b78b39a999f95a70ef610e68d30b9b2bb0ed7)
-
+![donut](https://user-images.githubusercontent.com/66507909/135775594-dd729ae2-22d7-4692-92e9-c174c29991b2.gif)
 ---
 
 ## ✨ Features
