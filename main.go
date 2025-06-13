@@ -25,10 +25,21 @@ func calculateX(i, j, k, A, B, C float64) (x, y, z float64) {
 
 func main() {
 
+	const (
+		width  = 160
+		height = 40
+	)
 	// var cubeWidth float64 = 10
 	// var width, height int = 160, 40
-	// var zBuffer [160 * 44]float64
-	// var buffer [160 * 44]rune
+	var zBuffer [width * height]float64
+	var buffer [width * height]rune
+
+	for i := range buffer {
+		buffer[i] = ' '
+		zBuffer[i] = 0
+	}
+	fmt.Println(buffer)
+
 	x, y, z := 1.0, 0.0, 0.0
 
 	A := math.Pi / 4 // degree
