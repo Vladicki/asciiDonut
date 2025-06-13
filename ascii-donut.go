@@ -13,7 +13,8 @@ func main() {
 		phiSpacing   = 0.02
 	)
 
-	A, B, C := 0.0, 0.0, 0.0
+	A, B, C := 0.0, math.Pi/4, 0.0
+	luminance := ".,-~:;=!*#$@"
 
 	for {
 		var zBuffer [width * height]float64
@@ -45,6 +46,8 @@ func main() {
 
 				// rotate point using your rotational matrix
 				xRot, yRot, zRot := calcRotMatrix(x, y, z, A, B, C)
+				// xRot, yRot, zRot := rotateAxiasY(x, y, z, B)
+
 				zRot += 5 // pull forward
 
 				ooz := 1 / zRot
@@ -65,7 +68,6 @@ func main() {
 					lumIndex = 11
 				}
 
-				luminance := ".,-~:;=!*#$@"
 				char := rune(luminance[lumIndex])
 
 				idx := xp + yp*width
@@ -119,3 +121,14 @@ func calcRotMatrix(i, j, k, A, B, C float64) (x, y, z float64) {
 
 	return
 }
+
+func rotateAxiasY(i, j, k, B float64) (x, y, z float64) {
+	sinB, cosB := math.Sin(B), math.Cos(B)
+
+	x = i*cosB + k*sinB
+	y = j
+	z = -i*sinB + k*cosB
+
+	return
+}
+
