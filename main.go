@@ -1,6 +1,7 @@
 package main
 
 import "fmt"
+import "time"
 import "math"
 
 func main() {
@@ -12,103 +13,109 @@ func main() {
 		phiSpacing   = 0.02
 	)
 
-	var zBuffer [width * height]float64
-	var buffer [width * height]rune
+	A, B, C := 0.0, 0.0, 0.0
 
-	for i := range buffer {
-		buffer[i] = ' '
-		zBuffer[i] = 0
-	}
-	fmt.Println(buffer)
+	for {
+		var zBuffer [width * height]float64
+		var buffer [width * height]rune
 
-	x, y, z := 1.0, 0.0, 0.0
+		for i := range buffer {
+			buffer[i] = ' '
+			zBuffer[i] = 0
+		}
 
-	A := math.Pi / 4 // degree
-	B := math.Pi / 4 // degree
-	C := math.Pi / 4 // degree
-	calcX, calcY, calcZ := calculateX(x, y, z, A, B, C)
+		// calcX, calcY, calcZ := calculateX(x, y, z, A, B, C)
 
-	//TODO remove it and add the rotational matrx
-	sinA, cosA := math.Sin(A), math.Cos(A)
-	sinB, cosB := math.Sin(B), math.Cos(B)
+		// fmt.Println(calcX, calcY, calcZ)
+		// fmt.Println("Hello Donut Ascii")
 
-	fmt.Println(calcX, calcY, calcZ)
-	fmt.Println("Hello Donut Ascii")
+		for theta := 0.0; theta < 2*math.Pi; theta += thetaSpacing {
+			for phi := 0.0; phi < 2*math.Pi; phi += phiSpacing {
+				// circle position
+				circleX := math.Cos(theta)
+				circleY := math.Sin(theta)
 
-	for theta := 0.0; theta < 2*math.Pi; theta += thetaSpacing {
-		for phi := 0.0; phi < 2*math.Pi; phi += phiSpacing {
-			// 3D coordinates of the surface of the torus
-			circleX := math.Cos(theta)
-			circleY := math.Sin(theta)
+				r1 := 2.0 // major radius
+				r2 := 1.0 // minor radius
 
-			// torus radius setup
-			r2 := 1.0
-			r1 := 2.0
+				// raw torus point in 3D
+				x := (r2*math.Cos(phi) + r1) * circleX
+				y := (r2*math.Cos(phi) + r1) * circleY
+				z := r2 * math.Sin(phi)
 
-			// 3D coordinates after rotating the torus
-			x := (r2*math.Cos(phi) + r1) * circleX
-			y := (r2*math.Cos(phi) + r1) * circleY
-			z := r2 * math.Sin(phi)
-			// 3D rotation (only A and B for now)
-			xRot := cosB*x + sinA*sinB*y + cosA*sinB*z
-			yRot := cosA*y - sinA*z
-			zRot := -sinB*x + sinA*cosB*y + cosA*cosB*z + 5 // +5: pull donut away
+				// rotate point using your rotational matrix
+				xRot, yRot, zRot := calcRotMatrix(x, y, z, A, B, C)
+				zRot += 5 // pull forward
 
-			ooz := 1 / zRot
-			xp := int(float64(width)/2 + 30*ooz*xRot)
-			yp := int(float64(height)/2 - 15*ooz*yRot)
+				ooz := 1 / zRot
+				xp := int(float64(width)/2 + 30*ooz*xRot)
+				yp := int(float64(height)/2 - 15*ooz*yRot)
 
-			// simple luminance / brightness value
-			L := math.Cos(phi)*math.Cos(theta)*sinB -
-				cosA*math.Cos(theta)*math.Sin(phi) -
-				sinA*math.Sin(theta) +
-				cosB*(cosA*math.Sin(theta)-math.Cos(theta)*sinA*math.Sin(phi))
+				// basic luminance calculation
+				L := math.Cos(phi)*math.Cos(theta)*math.Sin(B) -
+					math.Cos(A)*math.Cos(theta)*math.Sin(phi) -
+					math.Sin(A)*math.Sin(theta) +
+					math.Cos(B)*(math.Cos(A)*math.Sin(theta)-math.Cos(theta)*math.Sin(A)*math.Sin(phi))
 
-			lumIndex := int(L * 8)
-			if lumIndex < 0 {
-				lumIndex = 0
-			}
-			if lumIndex > 11 {
-				lumIndex = 11
-			}
-			luminance := ".,-~:;=!*#$@"
-			char := rune(luminance[lumIndex])
+				lumIndex := int(L * 8)
+				if lumIndex < 0 {
+					lumIndex = 0
+				}
+				if lumIndex > 11 {
+					lumIndex = 11
+				}
 
-			idx := xp + yp*width
-			if idx >= 0 && idx < width*height {
-				if ooz > zBuffer[idx] {
-					zBuffer[idx] = ooz
-					buffer[idx] = char
+				luminance := ".,-~:;=!*#$@"
+				char := rune(luminance[lumIndex])
+
+				idx := xp + yp*width
+				if idx >= 0 && idx < width*height {
+					if ooz > zBuffer[idx] {
+						zBuffer[idx] = ooz
+						buffer[idx] = char
+					}
 				}
 			}
 		}
-	}
 
-	// Print buffer
-	for i := range width * height {
-		if i%width == 0 {
-			fmt.Print("\n")
+		// clear screen
+		fmt.Print("\x1b[H") // ANSI escape: move cursor to top
+		for i := range width * height {
+			if i%width == 0 {
+				fmt.Print("\n")
+			}
+			fmt.Printf("%c", buffer[i])
 		}
-		fmt.Printf("%c", buffer[i])
+
+		// rotate over time
+		A += 0.04
+		B += 0.02
+		C += 0.01
+
+		time.Sleep(30 * time.Millisecond)
 	}
 }
 
-func calculateX(i, j, k, A, B, C float64) (x, y, z float64) {
+func calcRotMatrix(i, j, k, A, B, C float64) (x, y, z float64) {
 
-	sinA, cosA := math.Sin(A), math.Cos(A)
-	sinB, cosB := math.Sin(B), math.Cos(B)
-	sinC, cosC := math.Sin(C), math.Cos(C)
+	sinA, cosA := math.Sin(A), math.Cos(A) // X
+	sinB, cosB := math.Sin(B), math.Cos(B) // Y
+	sinC, cosC := math.Sin(C), math.Cos(C) // Z
 
-	// Creating Rotational matricies for X
-	x = j*sinA*sinB*cosC - k*cosA*sinB*cosC +
-		j*cosA*sinC + k*sinA*sinC + j*cosB*cosC
+	// Rotation around Y-axis (B)
+	x1 := i*cosB + k*sinB
+	z1 := -i*sinB + k*cosB
+	y1 := j
 
-	// Creating Rotational matricies for Y
-	y = j*cosA*cosC + k*sinA*cosC - j*sinA*sinB*sinC + k*cosA*sinB*sinC -
-		i*cosB*sinC
+	// Rotation around X-axis (A)
+	y2 := y1*cosA - z1*sinA
+	z2 := y1*sinA + z1*cosA
+	x2 := x1
 
-		// Creating Rotational matricies for Z
-	z = k*cosA*cosB - j*sinA*cosB + j*sinB
+	// Rotation around Z-axis (C)
+	x = x2*cosC - y2*sinC
+	y = x2*sinC + y2*cosC
+	z = z2
 
 	return
 }
