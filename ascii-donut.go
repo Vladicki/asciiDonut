@@ -7,12 +7,14 @@ import "math"
 func main() {
 
 	const (
-		width        = 160
-		height       = 40
+		width        = 160  // Width of the outputed donut frame
+		height       = 40   // Height of the outputed donut frame
 		thetaSpacing = 0.07 // angle step around the cross-section circle
-		phiSpacing   = 0.02
+		phiSpacing   = 0.02 // Scalling of the circle/tube of the donut
 	)
 
+	//Starting location of 3 dimentions
+	//B setted 45 degree off
 	A, B, C := 0.0, math.Pi/4, 0.0
 	luminance := ".,-~:;=!*#$@"
 
@@ -98,6 +100,7 @@ func main() {
 	}
 }
 
+// TODO a triple check the matricies math behind it
 func calcRotMatrix(i, j, k, A, B, C float64) (x, y, z float64) {
 
 	sinA, cosA := math.Sin(A), math.Cos(A) // X
@@ -131,4 +134,3 @@ func rotateAxiasY(i, j, k, B float64) (x, y, z float64) {
 
 	return
 }
-
